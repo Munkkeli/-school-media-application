@@ -8,7 +8,7 @@ document.querySelector('#reset-button').addEventListener('click', () => {
   update(originalData);
 });
 
-document.querySelector('.modal button').addEventListener('click', (evt) => {
+document.querySelector('.modal button').addEventListener('click', evt => {
   evt.target.parentNode.classList.add('hidden');
 });
 
@@ -18,13 +18,13 @@ const createArticle = (image, title, texts) => {
     text += `<p>${t}</p>`;
   }
 
-  return `<img src="${image}" alt="${title}">
+  return `<img src="/thumbs/${image}" alt="${title}">
                 <h3 class="card-title">${title}</h3>
                 <p>${text}</p>
                 <p><button>View</button></p>`;
 };
 
-const categoryButtons = (items) => {
+const categoryButtons = items => {
   items = removeDuplicates(items, 'category');
   console.log(items);
   document.querySelector('#categories').innerHTML = '';
@@ -46,13 +46,14 @@ const sortItems = (items, rule) => {
 };
 
 const getData = () => {
-  fetch('data.json').then(response => {
-    return response.json();
-  }).then(items => {
-    originalData = items;
-    update(items);
-  });
-
+  fetch('/list')
+    .then(response => {
+      return response.json();
+    })
+    .then(items => {
+      originalData = items;
+      update(items);
+    });
 };
 
 const removeDuplicates = (myArr, prop) => {
@@ -61,7 +62,7 @@ const removeDuplicates = (myArr, prop) => {
   });
 };
 
-const update = (items) => {
+const update = items => {
   categoryButtons(items);
   document.querySelector('main').innerHTML = '';
   for (let item of items) {
@@ -70,10 +71,11 @@ const update = (items) => {
     const time = moment(item.time);
     article.innerHTML = createArticle(item.thumbnail, item.title, [
       '<small>' + time.format('dddd, MMMM Do YYYY, HH:mm') + '</small>',
-      item.details]);
+      item.details
+    ]);
     article.addEventListener('click', () => {
       document.querySelector('.modal').classList.remove('hidden');
-      document.querySelector('.modal img').src = item.image;
+      document.querySelector('.modal img').src = '/medium/' + item.image;
       document.querySelector('.modal h4').innerHTML = item.title;
       resetMap(item);
       document.querySelector('#map').addEventListener('transitionend', () => {
@@ -87,18 +89,17 @@ const update = (items) => {
 const initMap = () => {
   map = L.map('map').setView([0, 0], 13);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(map);
 
   getData();
 };
 
-const resetMap = (item) => {
+const resetMap = item => {
   try {
     map.removeLayer(marker);
-  } catch (e) {
-
-  }
+  } catch (e) {}
   const coords = item.coordinates;
   console.log(coords);
   map.panTo([coords.lat, coords.lng]);
